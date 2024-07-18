@@ -1,19 +1,12 @@
 import picamera2 #camera module for RPi camera
-from picamera2 import Picamera2
 from picamera2.encoders import H264Encoder, MJPEGEncoder
 from picamera2.outputs import FileOutput, CircularOutput
 import io
 
-import subprocess
 from flask import Flask, render_template, Response, request
-from flask_restful import Resource, Api, reqparse, abort
-import atexit
-from datetime import datetime
+from flask_restful import Resource, Api
 from threading import Condition
-import time
-import os
 
-from libcamera import Transform
 
 app = Flask(__name__, template_folder='template', static_url_path='/static')
 api = Api(app)
