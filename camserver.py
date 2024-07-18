@@ -2,11 +2,17 @@ import picamera2 #camera module for RPi camera
 from picamera2.encoders import H264Encoder, MJPEGEncoder
 from picamera2.outputs import FileOutput, CircularOutput
 import io
-
+import gpiozero
+from time import sleep
 from flask import Flask, render_template, Response, request
 from flask_restful import Resource, Api
 from threading import Condition
+import threading
 
+
+RELAY_PIN = 23
+relay = gpiozero.OutputDevice(RELAY_PIN, active_high=False, initial_value=False)
+#relay.close()
 
 app = Flask(__name__, template_folder='template', static_url_path='/static')
 api = Api(app)
@@ -62,6 +68,12 @@ class VideoFeed(Resource):
                     mimetype='multipart/x-mixed-replace; boundary=frame')
     
 
+def waterPlant(seconds):
+    print("Assigned to thread: {}".format(threading.current_thread().name))
+    relay.on()
+    sleep(int(seconds))
+    relay.off()
+
 @app.route('/')
 def index():
     """Video streaming home page."""
@@ -73,6 +85,8 @@ def form_return():
     if request.method == 'POST':
         run_time = request.form['runTime']
         print(run_time)
+        water_thread = threading.Thread(target=waterPlant, name='water_delay', args=(run_time,))
+        water_thread.start()
     return render_template('index.html')
 
 api.add_resource(VideoFeed, '/cam')
