@@ -1,1 +1,3 @@
-Simple Flask Webcam that records video, sound and takes a picture with Picmaera2. The project was based on this article by KarasuY. https://github.com/raspberrypi/picamera2/issues/844
+Basic Flask application to allow for gpio interaction with a live webcam for monitoring. 
+
+Based on [sepi/Webcam](https://github.com/allphasepi/Webcam)
