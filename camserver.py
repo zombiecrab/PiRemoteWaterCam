@@ -1,6 +1,7 @@
 import picamera2 #camera module for RPi camera
-from picamera2.encoders import H264Encoder, MJPEGEncoder
+from picamera2.encoders import H264Encoder, MJPEGEncoder, Quality
 from picamera2.outputs import FileOutput, CircularOutput
+from libcamera import Transform
 import io
 import gpiozero
 from time import sleep
@@ -9,10 +10,14 @@ from flask_restful import Resource, Api
 from threading import Condition
 import threading
 
+#Ganral settings TODO: move to cfg file
+flip_image = True
+resolution = (640, 480)
+video_quality = Quality.VERY_LOW
 
 RELAY_PIN = 23
 relay = gpiozero.OutputDevice(RELAY_PIN, active_high=False, initial_value=False)
-#relay.close()
+
 
 app = Flask(__name__, template_folder='template', static_url_path='/static')
 api = Api(app)
@@ -22,8 +27,8 @@ output = CircularOutput()
 
 class Camera:
     def __init__(self):
-        self.camera = picamera2.Picamera2()
-        self.camera.configure(self.camera.create_video_configuration(main={"size": (800, 600)}))
+        self.camera = picamera2.Picamera2()    
+        self.camera.configure(self.camera.create_video_configuration(main={"size": resolution}, transform=Transform(vflip=flip_image)))
         self.still_config = self.camera.create_still_configuration()
         self.encoder = MJPEGEncoder(10000000)
         self.streamOut = StreamingOutput()
@@ -31,7 +36,7 @@ class Camera:
         self.encoder.output = [self.streamOut2]
 
         self.camera.start_encoder(self.encoder) 
-        self.camera.start_recording(encoder, output) 
+        self.camera.start_recording(encoder, output,  quality=video_quality) 
 
     def get_frame(self):
         self.camera.start()
